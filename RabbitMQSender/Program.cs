@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using RabbitMQReceiver;
 using System;
 using System.Text;
 using System.Threading;
@@ -23,10 +24,15 @@ namespace RabbitMQSender
                                  autoDelete: false,
                                  arguments: null);
 
+            // start the receiver:
+            // (normally this would be done using DI and
+            // background worker would start itself in the background)
+            var receiver = new ProductReceiverService().StartAsync(CancellationToken.None);
+
             int index = 1;
             while (index <= 99999)
             {
-                string message = $"{index}|Product{10000 + index}|Potato|3|{DateTime.UtcNow.ToLongDateString()}|1|Poland";
+                string message = $"{index}|Product{10000 + index}|Potato|3|{DateTime.UtcNow.ToLongDateString()}|1|Lithuania";
                 var body = Encoding.UTF8.GetBytes(message);
 
                 // push content into the queue
@@ -34,9 +40,9 @@ namespace RabbitMQSender
                                      routingKey: "products",
                                      basicProperties: null,
                                      body: body);
-                Console.WriteLine(" [x] Sent {0}", message);
+                Console.WriteLine("Sent " + message);
                 index++;
-                Thread.Sleep(10000);
+                Thread.Sleep(1000);
             }
         }
     }
